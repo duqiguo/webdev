@@ -143,11 +143,11 @@ export function useAdvancedSearch(tools: Tool[]) {
 
   // 获取所有可用的筛选选项
   const getFilterOptions = () => {
-    const categories = [...new Set(tools.map(tool => tool.category))].filter(Boolean);
-    const subcategories = [...new Set(tools.map(tool => tool.subcategory))].filter(Boolean);
-    const tags = [...new Set(tools.flatMap(tool => tool.tags))].filter(Boolean);
-    const platforms = [...new Set(tools.flatMap(tool => tool.platform || []))].filter(Boolean);
-    const pricingOptions = [...new Set(tools.map(tool => tool.pricing))].filter(Boolean);
+    const categories = Array.from(new Set(tools.map(tool => tool.category))).filter(Boolean);
+    const subcategories = Array.from(new Set(tools.map(tool => tool.subcategory))).filter(Boolean);
+    const tags = Array.from(new Set(tools.flatMap(tool => tool.tags))).filter(Boolean);
+    const platforms = Array.from(new Set(tools.flatMap(tool => tool.platform || []))).filter(Boolean);
+    const pricingOptions = Array.from(new Set(tools.map(tool => tool.pricing))).filter(Boolean);
 
     return {
       categories,
