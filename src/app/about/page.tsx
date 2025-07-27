@@ -50,7 +50,7 @@ export default function AboutPage() {
 
             <div className="pt-6 border-t border-gray-200">
               <p className="text-sm text-gray-500">
-                © 2024 WebDev导航站 - 让开发更高效
+                © 2025 WebDev导航站 - 让开发更高效
               </p>
             </div>
           </div>
