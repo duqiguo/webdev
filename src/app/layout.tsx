@@ -30,7 +30,7 @@ export default function RootLayout({
     <html lang="zh-CN">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="canonical" href="https://您的域名" />
+        <link rel="canonical" href="https://www.rdwind.online" />
         <Script
           strategy="afterInteractive"
           src="https://www.googletagmanager.com/gtag/js?id=G-M89GX20S0G"
