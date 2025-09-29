@@ -42,54 +42,54 @@ export default function ToolCard({ tool, compact = true, showFavorite = true }: 
 
   return (
     <div
-      className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer relative group"
+      className="bg-white border border-gray-200 rounded p-2.5 hover:shadow-sm transition-all duration-200 cursor-pointer relative group min-h-[120px] flex flex-col"
       onClick={handleCardClick}
     >
-      <div className="flex items-start gap-3 mb-3">
+      <div className="flex items-start gap-1.5 mb-1.5">
         {tool.icon && (
-          <span className="text-2xl flex-shrink-0">{tool.icon}</span>
+          <span className="text-lg flex-shrink-0">{tool.icon}</span>
         )}
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 text-base leading-tight">
+          <h3 className="font-semibold text-gray-900 text-sm leading-tight truncate">
             {tool.name}
           </h3>
           {tool.openSource && (
-            <span className="inline-block mt-1 text-xs bg-green-50 text-green-600 border border-green-200 rounded px-2 py-0.5">
+            <span className="inline-block mt-1 text-xs bg-green-50 text-green-600 border border-green-200 rounded px-1.5 py-0.5">
               开源
             </span>
           )}
         </div>
         {showFavorite && (
-          <div className="ml-2">
+          <div className="ml-1.5 flex-shrink-0">
             <FavoriteButton toolId={tool.id} />
           </div>
         )}
       </div>
 
-      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+      <p className="text-gray-600 text-xs mb-2 line-clamp-2 leading-relaxed flex-1">
         {tool.description}
       </p>
 
       {tool.tags && tool.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-3">
-          {tool.tags.slice(0, 3).map((tag, index) => (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {tool.tags.slice(0, 2).map((tag, index) => (
             <span
               key={index}
-              className={`text-xs px-2 py-1 rounded border font-medium ${getTagColor(tag)}`}
+              className={`text-xs px-1.5 py-0.5 rounded border font-medium whitespace-nowrap ${getTagColor(tag)}`}
             >
               {tag}
             </span>
           ))}
-          {tool.tags.length > 3 && (
-            <span className="text-xs text-gray-500">+{tool.tags.length - 3}</span>
+          {tool.tags.length > 2 && (
+            <span className="text-xs text-gray-500 whitespace-nowrap">+{tool.tags.length - 2}</span>
           )}
         </div>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mt-auto">
         {tool.pricing && (
           <span
-            className={`text-xs px-2 py-1 rounded border font-medium ${
+            className={`text-xs px-1.5 py-0.5 rounded border font-medium whitespace-nowrap ${
               tool.pricing === 'free'
                 ? 'bg-green-50 text-green-600 border-green-200'
                 : tool.pricing === 'paid'
@@ -106,7 +106,7 @@ export default function ToolCard({ tool, compact = true, showFavorite = true }: 
           target="_blank"
           rel="noopener noreferrer"
           onClick={handleLinkClick}
-          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
+          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-xs font-medium whitespace-nowrap"
         >
           访问
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
