@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { allTools, quickLinks } from '@/lib/data';
 import type { Tool, QuickLink } from '@/lib/types';
+import { useRouter } from 'next/navigation';
 
 interface SearchBoxProps {
   placeholder?: string;
@@ -17,6 +18,7 @@ export default function SearchBox({ placeholder = "搜索工具/模板/资讯...
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<SearchItem[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // 实时搜索建议
   useEffect(() => {
@@ -81,8 +83,8 @@ export default function SearchBox({ placeholder = "搜索工具/模板/资讯...
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      // 跳转到搜索结果页面或处理搜索逻辑
-      window.location.href = `/?search=${encodeURIComponent(query.trim())}`;
+      // 使用 Next 路由跳转，避免整页刷新
+      router.push(`/?search=${encodeURIComponent(query.trim())}`);
     }
   };
 
@@ -97,7 +99,7 @@ export default function SearchBox({ placeholder = "搜索工具/模板/资讯...
       window.open(item.url, '_blank');
     } else {
       // 如果是工具，跳转到工具详情页
-      window.location.href = `/tool/${item.id}`;
+      router.push(`/tool/${item.id}`);
     }
   };
 
@@ -170,7 +172,12 @@ export default function SearchBox({ placeholder = "搜索工具/模板/资讯...
           {query && (
             <div className="border-t border-gray-100 px-4 py-3">
               <button
-                onClick={() => handleSubmit(new Event('submit') as any)}
+                onClick={() => {
+                  if (query.trim()) {
+                    router.push(`/?search=${encodeURIComponent(query.trim())}`);
+                    setShowSuggestions(false);
+                  }
+                }}
                 className="w-full text-center text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
                 查看"{query}"的所有搜索结果

@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { allTools, quickLinks } from '@/lib/data';
 import ToolCard from './ToolCard';
 import type { Tool, QuickLink } from '@/lib/types';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAdvancedSearch } from '@/hooks/useSearch';
 
 interface SearchResultsProps {
   searchQuery?: string;
@@ -42,19 +44,22 @@ const QuickLinkCard = ({ link }: { link: QuickLink }) => {
 };
 
 export default function SearchResults({ searchQuery = '' }: SearchResultsProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [results, setResults] = useState<Tool[]>([]);
   const [quickLinkResults, setQuickLinkResults] = useState<QuickLink[]>([]);
-  const [filteredResults, setFilteredResults] = useState<Tool[]>([]);
-  const [categoryFilter, setCategoryFilter] = useState('');
-  const [pricingFilter, setPricingFilter] = useState('');
-  const [sortBy, setSortBy] = useState('relevance');
+  const [categoryFilter, setCategoryFilter] = useState<string>(searchParams.get('category') || '');
+  const [pricingFilter, setPricingFilter] = useState<string>(searchParams.get('pricing') || '');
+  const [sortBy, setSortBy] = useState<string>(searchParams.get('sort') || 'relevance');
 
-  // 搜索逻辑
+  // 使用高级搜索 Hook 管理筛选（基于关键词命中后的工具集合）
+  const { filteredResults: advFilteredResults, updateFilter } = useAdvancedSearch(results);
+
+  // 搜索逻辑（关键词 + 快速链接）
   useEffect(() => {
     if (!searchQuery.trim()) {
       setResults([]);
       setQuickLinkResults([]);
-      setFilteredResults([]);
       return;
     }
 
@@ -82,51 +87,54 @@ export default function SearchResults({ searchQuery = '' }: SearchResultsProps) 
     setQuickLinkResults(linkResults);
   }, [searchQuery]);
 
-  // 筛选和排序
+  // 将关键字与筛选条件同步给高级搜索 Hook
   useEffect(() => {
-    let filtered = [...results];
+    updateFilter('keyword', searchQuery);
+  }, [searchQuery, updateFilter]);
 
-    // 分类筛选
-    if (categoryFilter) {
-      filtered = filtered.filter(tool => 
-        tool.category === categoryFilter || tool.subcategory === categoryFilter
-      );
-    }
+  useEffect(() => {
+    updateFilter('category', categoryFilter);
+  }, [categoryFilter, updateFilter]);
 
-    // 价格筛选
-    if (pricingFilter) {
-      filtered = filtered.filter(tool => tool.pricing === pricingFilter);
-    }
+  useEffect(() => {
+    updateFilter('pricing', pricingFilter as any);
+  }, [pricingFilter, updateFilter]);
 
-    // 排序
+  // 本地排序（在高级筛选结果的基础上）
+  const sortedResults = useMemo(() => {
+    const list = [...advFilteredResults];
     switch (sortBy) {
       case 'name':
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
-        break;
+        return list.sort((a, b) => a.name.localeCompare(b.name));
       case 'category':
-        filtered.sort((a, b) => a.category.localeCompare(b.category));
-        break;
+        return list.sort((a, b) => a.category.localeCompare(b.category));
       case 'pricing':
-        filtered.sort((a, b) => {
-          const priceOrder = { 'free': 0, 'freemium': 1, 'paid': 2 };
-          return (priceOrder[a.pricing as keyof typeof priceOrder] || 3) - 
-                 (priceOrder[b.pricing as keyof typeof priceOrder] || 3);
+        return list.sort((a, b) => {
+          const priceOrder = { free: 0, freemium: 1, paid: 2 } as const;
+          return (priceOrder[a.pricing as keyof typeof priceOrder] ?? 3) - (priceOrder[b.pricing as keyof typeof priceOrder] ?? 3);
         });
-        break;
-      default: // relevance
-        // 保持搜索相关性排序
-        break;
+      default:
+        return list; // relevance
     }
+  }, [advFilteredResults, sortBy]);
 
-    setFilteredResults(filtered);
-  }, [results, categoryFilter, pricingFilter, sortBy]);
+  // URL 同步
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (searchQuery) params.set('search', searchQuery); else params.delete('search');
+    if (categoryFilter) params.set('category', categoryFilter); else params.delete('category');
+    if (pricingFilter) params.set('pricing', pricingFilter); else params.delete('pricing');
+    if (sortBy && sortBy !== 'relevance') params.set('sort', sortBy); else params.delete('sort');
+    const qs = params.toString();
+    router.replace(qs ? `/?${qs}` : '/');
+  }, [searchQuery, categoryFilter, pricingFilter, sortBy, router, searchParams]);
 
-  // 获取所有可用的分类选项
+  // 获取所有可用的分类与价格选项（基于搜索命中的结果集合）
   const availableCategories = Array.from(new Set(results.flatMap(tool => [tool.category, tool.subcategory]).filter(Boolean)));
   const availablePricing = Array.from(new Set(results.map(tool => tool.pricing).filter(Boolean)));
   
   // 计算总结果数
-  const totalResults = filteredResults.length + quickLinkResults.length;
+  const totalResults = sortedResults.length + quickLinkResults.length;
 
   if (!searchQuery.trim()) {
     return null;
@@ -242,13 +250,13 @@ export default function SearchResults({ searchQuery = '' }: SearchResultsProps) 
 
               {/* 搜索结果网格 */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredResults.map(tool => (
+                {sortedResults.map(tool => (
                   <ToolCard key={tool.id} tool={tool} />
                 ))}
               </div>
 
               {/* 筛选后无结果 */}
-              {filteredResults.length === 0 && results.length > 0 && (
+              {sortedResults.length === 0 && results.length > 0 && (
                 <div className="text-center py-16">
                   <div className="text-4xl mb-4">🚫</div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">

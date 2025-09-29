@@ -2,6 +2,7 @@ import { allTools } from '@/lib/data';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Tool } from '@/lib/types';
+import FavoriteButton from '@/components/FavoriteButton';
 
 export default function ToolDetailPage({ params }: { params: { id: string } }) {
   const tool: Tool | undefined = allTools.find((t: Tool) => t.id === params.id);
@@ -44,6 +45,9 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
                   开源项目
                 </span>
               )}
+            </div>
+            <div className="pt-1">
+              <FavoriteButton toolId={tool.id} />
             </div>
           </div>
 

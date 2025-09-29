@@ -2,6 +2,8 @@
 
 import React from 'react';
 import type { Tool } from '@/lib/types';
+import { useRouter } from 'next/navigation';
+import FavoriteButton from './FavoriteButton';
 
 interface ToolCardProps {
   tool: Tool;
@@ -10,8 +12,9 @@ interface ToolCardProps {
 }
 
 export default function ToolCard({ tool, compact = true, showFavorite = true }: ToolCardProps) {
+  const router = useRouter();
   const handleCardClick = () => {
-    window.location.href = `/tool/${tool.id}`;
+    router.push(`/tool/${tool.id}`);
   };
 
   const handleLinkClick = (e: React.MouseEvent) => {
@@ -56,6 +59,11 @@ export default function ToolCard({ tool, compact = true, showFavorite = true }: 
             </span>
           )}
         </div>
+        {showFavorite && (
+          <div className="ml-2">
+            <FavoriteButton toolId={tool.id} />
+          </div>
+        )}
       </div>
 
       <p className="text-gray-600 text-sm mb-3 line-clamp-2">
